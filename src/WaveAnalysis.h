@@ -26,7 +26,7 @@ struct MA_PAR{
 
 //
 Double_t MA(Double_t *v, UInt_t i, UInt_t window);
-
+Double_t Fittf(Double_t *i, Double_t *p);
 
 //
 class WaveAnalysis
@@ -50,6 +50,7 @@ private:
   void PolarityWave();  // polarity fix
   void BaselineWave();  // baseline fix
   void MAFilterWave();  // ma filter
+  void FitWave();  // ma filter
 
 private:
   Int_t entry_start;

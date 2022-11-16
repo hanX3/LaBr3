@@ -101,6 +101,28 @@ void WaveAnalysis::MAFilterWave()
 }
 
 //
+void WaveAnalysis::FitWave()
+{
+  energy = 0.;
+
+  TH1D *h = new TH1D("h", "", ltra, 0, ltra);
+  for(int i=0;i<ltra;i++){
+    h->SetBinContent(i+1, data_bl[i]);
+  }
+
+  TF1 *tf = new TF1("tf", Fittf, 50, 200, 4);
+  tf->SetParameter(0, baseline);
+  tf->SetParameter(1, 100.);
+  tf->SetParameter(2, 500.);
+  tf->SetParameter(3, DECAYTIMEPMT);
+
+  h->Fit(tf, "QWN0RS");
+
+  delete h;
+  delete tf;
+}
+
+//
 void WaveAnalysis::Process()
 {
   benchmark->Start("analysis");
@@ -131,6 +153,7 @@ bool WaveAnalysis::ProcessEntry(Long64_t n)
   PolarityWave();
   BaselineWave();
   MAFilterWave();
+  // FitWave();
 
   return true;
 }
@@ -148,7 +171,6 @@ void WaveAnalysis::DrawEntry(Long64_t n)
   for(int i=0;i<ltra;i++){
     g1->SetPoint(i, (Double_t)i, (Double_t)data_bl[i]);
   }
-
   cav1->cd();
   g1->Draw();
 
@@ -156,9 +178,23 @@ void WaveAnalysis::DrawEntry(Long64_t n)
   for(int i=0;i<ltra;i++){
     g2->SetPoint(i, (Double_t)i, (Double_t)data_ma[i]);
   }
-
-  // cav2->cd();
+  cav1->cd();
   g2->Draw("same");
+
+
+  TH1D *h = new TH1D("h", "", ltra, 0, ltra);
+  for(int i=0;i<ltra;i++){
+    h->SetBinContent(i+1, data_bl[i]);
+  }
+  cav2->cd();
+  
+  TF1 *tf = new TF1("tf", Fittf, 50, 200, 4);
+  tf->SetParameter(0, baseline);
+  tf->SetParameter(1, 100.);
+  tf->SetParameter(2, 500.);
+  tf->SetParameter(3, DECAYTIMEPMT);
+
+  h->Fit(tf, "WR");
 }
 #endif
 
@@ -183,4 +219,18 @@ Double_t MA(Double_t *v, UInt_t i, UInt_t window)
   }
 
   return x/(Double_t)window;
+}
+
+//
+Double_t Fittf(Double_t *i, Double_t *p)
+{
+  Double_t s = p[0];
+  Double_t x = i[0]-p[1];
+
+  if(x<0) return s;
+  else{
+    s += TMath::Exp(-(x)/(double)p[3]);
+    s -= TMath::Exp(-(x)/(double)DECAYTIMELABR3);
+    return p[2]*s;
+  }
 }
