@@ -1,0 +1,7 @@
+#define DEBUG_BUILD
+
+#define MAX_SAMPLES 10000
+#define MAX_CHANNELS 8
+#define MAX_MULTI 8
+
+#define COINCEDENCE_WINDOWS 50 //ns
